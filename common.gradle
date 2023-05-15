@@ -1,173 +1,147 @@
-apply plugin: 'maven-publish'
-apply plugin: 'com.github.hierynomus.license'
-apply plugin: 'fabric-loom'
-apply plugin: 'io.github.juuxel.loom-quiltflower'
-apply plugin: 'com.replaymod.preprocess'
-apply plugin: 'me.fallenbreath.yamlang'
+apply plugin: "maven-publish"
+apply plugin: "fabric-loom"
+apply plugin: "io.github.juuxel.loom-quiltflower"
+apply plugin: "com.replaymod.preprocess"
+apply plugin: "me.fallenbreath.yamlang"
+apply plugin: 'com.modrinth.minotaur'
 
 int mcVersion = 1
 
 preprocess {
-	mcVersion = vars.get()["MC"]
-	tabIndentation = true
+    mcVersion = vars.get()["MC"]
+    tabIndentation = false
 }
 
 repositories {
-	maven {
-		url 'https://jitpack.io'
-	}
-	maven {
-		url 'https://www.cursemaven.com'
-	}
+    maven { url "https://jitpack.io" }
+    maven {
+        name = "Curseforge"
+        url = "https://www.cursemaven.com"
+    }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
+    maven {
+        name = "Gradle Plugin Portal"
+        url = "https://plugins.gradle.org/m2/"
+    }
+//	maven {
+//		name = "TerraformersMC"
+//		url "https://maven.terraformersmc.com/releases/"
+//	}
 }
 
 // https://github.com/FabricMC/fabric-loader/issues/783
 configurations {
-	modRuntimeOnly.exclude group: 'net.fabricmc', module: 'fabric-loader'
+    modRuntimeOnly.exclude group: "net.fabricmc", module: "fabric-loader"
 }
 
 dependencies {
-	// loom
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    // loom
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	// runtime mods
-//	if (mcVersion < 11904) {
-//		modRuntimeOnly(mcVersion < 11900 ? "com.github.astei:lazydfu:0.1.2" : "com.github.Fallen-Breath:lazydfu:a7cfc44c0c")
-//	}
+    // dependencies
+//	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+//	include api(annotationProcessor("com.github.LlamaLad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}"))
 
-	// dependencies
-//	include(modImplementation(fabricApi.module("fabric-resource-loader-v0", project.fabric_api_version)))
+//	modApi "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 loom {
-	runConfigs.all {
-		// to make sure it generates all "Minecraft Client (:subproject_name)" applications
-		ideConfigGenerated = true
-		runDir '../../run'
-		vmArgs '-Dmixin.debug.export=true'
-	}
+    runConfigs.all {
+        // to make sure it generates all "Minecraft Client (:subproject_name)" applications
+        ideConfigGenerated = true
+        runDir "../../run"
+        vmArgs "-Dmixin.debug.export=true"
+    }
 }
 
 remapJar {
-	remapperIsolation = true
+    remapperIsolation = true
 }
 
 if (mcVersion >= 11800) {
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
-}
-else if (mcVersion >= 11700) {
-	sourceCompatibility = JavaVersion.VERSION_16
-	targetCompatibility = JavaVersion.VERSION_16
-}
-else {
-	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+} else if (mcVersion >= 11700) {
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
+} else {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-String versionSuffix = ''
-// detect github action environment variables
-// https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
-if (System.getenv("BUILD_RELEASE") != "true") {
-	String buildNumber = System.getenv("BUILD_ID")
-	versionSuffix += buildNumber != null ? ('+build.' + buildNumber) : '-SHAPSHOT'
-}
-String fullModVersion = project.mod_version + versionSuffix
-
-version = 'v' + fullModVersion
-group = project.maven_group
-archivesBaseName = project.archives_base_name + '-mc' + project.minecraft_version
+archivesBaseName = project.archives_base_name + "-" + project.mod_version + "+" + project.game_versions
 
 processResources {
-	inputs.property "version", fullModVersion
+    inputs.property "version", project.mod_version
 
-	filesMatching("fabric.mod.json") {
-		def valueMap = [
-				"id": project.mod_id,
-				"name": project.mod_name,
-				"version": fullModVersion,
-				"minecraft_dependency": project.minecraft_dependency,
-		]
-		expand valueMap
-	}
+    filesMatching("fabric.mod.json") {
+        def valueMap = [
+                "id"                  : project.mod_id,
+                "name"                : project.mod_name,
+                "version"             : project.mod_version,
+                "minecraft_dependency": project.minecraft_dependency,
+        ]
+        expand valueMap
+    }
 }
 
 // https://github.com/Fallen-Breath/yamlang
 yamlang {
-	targetSourceSets = [sourceSets.main]
-	inputDir = 'assets/template_mod/lang'
+    targetSourceSets = [sourceSets.main]
+    inputDir = "assets/${project.mod_id}/lang"
 }
 
-// ensure that the encoding is set to UTF-8, no matter what the system default is
-// this fixes some edge cases with special characters not displaying correctly
-// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
 tasks.withType(JavaCompile) {
-	options.encoding = "UTF-8"
+    options.encoding = "UTF-8"
 }
 
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
+    withSourcesJar()
 }
 
 jar {
-	from(rootProject.file('LICENSE')) {
-		rename { "${it}_${project.archivesBaseName}"}
-	}
+    from(rootProject.file("LICENSE")) {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
 }
 
-// https://github.com/hierynomus/license-gradle-plugin
-license {
-	// use "gradle licenseFormat" to apply license headers
-	header = rootProject.file('HEADER.txt')
-	include '**/*.java'
-	skipExistingHeaders = true
+modrinth {
+	token = env.fetchOrNull("MODRINTH_TOKEN")
+	projectId = project.mod_id
+	versionName = project.mod_name + " " + project.mod_version + " for " + project.game_versions
+	versionNumber = project.mod_version
+	versionType = "release"
+	uploadFile = remapJar
+	additionalFiles = [sourcesJar]
+	gameVersions = project.modrinth_versions.split(" ").toList()
+	loaders = ["fabric", "quilt"]
+	dependencies {
 
-	headerDefinitions {
-		// ref: https://github.com/mathieucarbou/license-maven-plugin/blob/4c42374bb737378f5022a3a36849d5e23ac326ea/license-maven-plugin/src/main/java/com/mycila/maven/plugin/license/header/HeaderType.java#L48
-		// modification: add a newline at the end
-		SLASHSTAR_STYLE_NEWLINE {
-			firstLine = "/*"
-			beforeEachLine = " * "
-			endLine = " */" + System.lineSeparator()
-			afterEachLine = ""
-			skipLinePattern = null
-			firstLineDetectionPattern = "(\\s|\\t)*/\\*.*\$"
-			lastLineDetectionPattern = ".*\\*/(\\s|\\t)*\$"
-			allowBlankLines = false
-			isMultiline = true
-			padLines = false
-		}
 	}
-	mapping {
-		java = 'SLASHSTAR_STYLE_NEWLINE'
-	}
-	ext {
-		name = project.mod_name
-		author = 'Fallen_Breath'
-		year = Calendar.getInstance().get(Calendar.YEAR).toString()
-	}
+	syncBodyFrom = rootProject.file("README.md").text
+	changelog = rootProject.file("CHANGELOG.md").text
+	failSilently = true
+	debugMode = true
 }
-classes.dependsOn licenseFormatMain
-testClasses.dependsOn licenseFormatTest
 
 // configure the maven publication
 publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			artifactId archivesBaseName
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId archivesBaseName
 
-			from components.java
-		}
-	}
+            from components.java
+        }
+    }
 
-	// select the repositories you want to publish to
-	repositories {
-		// uncomment to publish to the local maven
-		// mavenLocal()
-	}
+    // select the repositories you want to publish to
+    repositories {
+        // uncomment to publish to the local maven
+        // mavenLocal()
+    }
 }

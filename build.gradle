@@ -1,6 +1,5 @@
 plugins {
     id 'maven-publish'
-    id 'com.github.hierynomus.license' version '0.16.1' apply false
     id 'fabric-loom' version '1.2-SNAPSHOT' apply false
 
     // https://github.com/Juuxel/LoomQuiltflower
@@ -12,23 +11,16 @@ plugins {
 
     // https://github.com/Fallen-Breath/yamlang
     id 'me.fallenbreath.yamlang' version '1.2.1' apply false
+
+    // https://github.com/modrinth/minotaur
+    id "com.modrinth.minotaur" version "2.+" apply false
+
+    // https://github.com/uzzu/dotenv-gradle
+    id "co.uzzu.dotenv.gradle" version "2.0.0"
 }
 
 preprocess {
-    def mc114      = createNode('1.14.4'  , 1_14_04, 'yarn')
-    def mc115      = createNode('1.15.2'  , 1_15_02, 'yarn')
-    def mc116      = createNode('1.16.5'  , 1_16_05, 'yarn')
-    def mc117      = createNode('1.17.1'  , 1_17_01, 'yarn')
-    def mc118      = createNode('1.18.2'  , 1_18_02, 'yarn')
-    def mc119      = createNode('1.19.x'  , 1_19_04, 'yarn')
-//    def mcSnapshot = createNode('snapshot', 1_19_00, 'yarn')
-
-    mc115.link(mc114, null)
-    mc115.link(mc116, null)
-    mc116.link(mc117, null)
-    mc117.link(mc118, null)
-    mc118.link(mc119, null)
-//    mc119.link(mcSnapshot, null)
+    def mc119 = createNode('1.19.x', 1_19_04, 'yarn')
 }
 
 tasks.register('buildAndGather') {
@@ -47,6 +39,18 @@ tasks.register('buildAndGather') {
                 into 'build/libs/'
                 duplicatesStrategy DuplicatesStrategy.INCLUDE
             }
+        }
+    }
+}
+
+tasks.register('cleanPreprocessSources') {
+    doFirst {
+        subprojects {
+            def path = project.projectDir.toPath().resolve('build/preprocessed')
+            path.toFile().deleteDir()
+
+            def resPath = project.projectDir.toPath().resolve('build/resources')
+            resPath.toFile().deleteDir()
         }
     }
 }
