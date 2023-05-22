@@ -4,6 +4,7 @@ apply plugin: "io.github.juuxel.loom-quiltflower"
 apply plugin: "com.replaymod.preprocess"
 apply plugin: "me.fallenbreath.yamlang"
 apply plugin: 'com.modrinth.minotaur'
+apply plugin: "com.github.breadmoirai.github-release"
 
 int mcVersion = 1
 
@@ -126,7 +127,21 @@ modrinth {
 	syncBodyFrom = rootProject.file("README.md").text
 	changelog = rootProject.file("CHANGELOG.md").text
 	failSilently = true
-	debugMode = true
+	debugMode = true // safety, disable to actually publish
+}
+
+githubRelease {
+    token = env.fetch("GITHUB_TOKEN", "")
+    owner = project.repo_owner
+    repo = project.mod_id
+    tagName = "v${project.mod_version}"
+    targetCommitish = "multi"
+    releaseName = project.mod_name + " " + project.mod_version
+    body = rootProject.file("CHANGELOG.md").text
+    draft = mcVersion > 11605 // first file should be false
+    releaseAssets = [remapJar, sourcesJar]
+    allowUploadToExisting = true // allows publishing multiple files
+    dryRun = true // safety, disable to actually publish
 }
 
 // configure the maven publication
