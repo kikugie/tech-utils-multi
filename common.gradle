@@ -9,7 +9,7 @@ apply plugin: "com.github.breadmoirai.github-release"
 int mcVersion = 1
 
 preprocess {
-	mcVersion = vars.get()["MC"] as int
+    mcVersion = vars.get()["MC"] as int
     tabIndentation = false
 }
 
@@ -46,9 +46,13 @@ dependencies {
 
     // dependencies
 //	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-//	include api(annotationProcessor("com.github.LlamaLad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}"))
+    // example module import
+//  modImplementation fabricApi.module("fabric-command-api-${mcVersion > 11802 ? "v2" : "v1"}", project.fabric_api_version)
 
 //	modApi "com.terraformersmc:modmenu:${project.modmenu_version}"
+
+    // mixin extensions
+// 	include api(annotationProcessor("com.github.LlamaLad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}"))
 }
 
 loom {
@@ -115,22 +119,22 @@ jar {
 }
 
 modrinth {
-	token = env.fetchOrNull("MODRINTH_TOKEN")
-	projectId = project.mod_id
-	versionName = project.mod_name + " " + project.mod_version + " for " + project.game_versions
-	versionNumber = project.mod_version
-	versionType = "release"
-	uploadFile = remapJar
-	additionalFiles = [sourcesJar]
-	gameVersions = project.modrinth_versions.split(" ").toList()
-	loaders = ["fabric", "quilt"]
-	dependencies {
+    token = env.fetchOrNull("MODRINTH_TOKEN")
+    projectId = project.mod_id
+    versionName = project.mod_name + " " + project.mod_version + " for " + project.game_versions
+    versionNumber = project.mod_version
+    versionType = "release"
+    uploadFile = remapJar
+    additionalFiles = [sourcesJar]
+    gameVersions = project.modrinth_versions.split(" ").toList()
+    loaders = ["fabric", "quilt"]
+    dependencies {
 
-	}
-	syncBodyFrom = rootProject.file("README.md").text
-	changelog = rootProject.file("CHANGELOG.md").text
-	failSilently = true
-	debugMode = true // safety, disable to actually publish
+    }
+    syncBodyFrom = rootProject.file("README.md").text
+    changelog = rootProject.file("CHANGELOG.md").text
+    failSilently = true
+    debugMode = true // safety, disable to actually publish
 }
 
 githubRelease {

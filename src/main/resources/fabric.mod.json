@@ -15,9 +15,6 @@
   "entrypoints": {
     "main": [
       "me.kikugie.template_mod.TemplateMod"
-    ],
-    "client": [
-      "me.kikugie.template_mod.TemplateModClient"
     ]
   },
   "mixins": [
