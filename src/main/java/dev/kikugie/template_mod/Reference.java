@@ -1,4 +1,4 @@
-package me.kikugie.template_mod;
+package dev.kikugie.template_mod;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.ModMetadata;

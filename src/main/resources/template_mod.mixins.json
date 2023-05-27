@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "me.kikugie.template_mod.mixins",
+  "package": "dev.kikugie.template_mod.mixins",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
   ],

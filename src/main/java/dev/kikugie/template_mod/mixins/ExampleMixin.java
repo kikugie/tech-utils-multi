@@ -1,6 +1,6 @@
-package me.kikugie.template_mod.mixins;
+package dev.kikugie.template_mod.mixins;
 
-import me.kikugie.template_mod.TemplateMod;
+import dev.kikugie.template_mod.TemplateMod;
 import net.minecraft.client.gui.screen.TitleScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

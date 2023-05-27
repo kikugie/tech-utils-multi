@@ -14,7 +14,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "me.kikugie.template_mod.TemplateMod"
+      "dev.kikugie.template_mod.TemplateMod"
     ]
   },
   "mixins": [
