@@ -116,6 +116,13 @@ jar {
     }
 }
 
+tasks.register("release") {
+    group("publishing")
+    dependsOn("modrinth")
+    dependsOn("githubRelease")
+//    dependsOn("publishing")
+}
+
 modrinth {
     token = project.findProperty("modrinthToken")
     projectId = project.mod_id
