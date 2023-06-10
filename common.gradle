@@ -1,6 +1,5 @@
 apply plugin: "maven-publish"
 apply plugin: "fabric-loom"
-apply plugin: "io.github.juuxel.loom-quiltflower"
 apply plugin: "com.replaymod.preprocess"
 apply plugin: "me.fallenbreath.yamlang"
 apply plugin: 'com.modrinth.minotaur'
@@ -79,8 +78,6 @@ if (mcVersion >= 11800) {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-archivesBaseName = project.archives_base_name + "-" + project.mod_version + "+" + project.game_versions
-
 processResources {
     inputs.property "version", project.mod_version
 
@@ -95,16 +92,17 @@ processResources {
     }
 }
 
-// https://github.com/Fallen-Breath/yamlang
 yamlang {
     targetSourceSets = [sourceSets.main]
     inputDir = "assets/${project.mod_id}/lang"
 }
 
-// ensure that the encoding is set to UTF-8, no matter what the system default is
-// this fixes some edge cases with special characters not displaying correctly
-// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-tasks.withType(JavaCompile) {
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
@@ -119,7 +117,7 @@ jar {
 }
 
 modrinth {
-    token = env.fetchOrNull("MODRINTH_TOKEN")
+    token = project.findProperty("modrinthToken")
     projectId = project.mod_id
     versionName = project.mod_name + " " + project.mod_version + " for " + project.game_versions
     versionNumber = project.mod_version
@@ -138,7 +136,7 @@ modrinth {
 }
 
 githubRelease {
-    token = env.fetch("GITHUB_TOKEN", "")
+    token = project.findProperty("githubToken")
     owner = project.repo_owner
     repo = project.mod_id
     tagName = "v${project.mod_version}"
@@ -153,17 +151,24 @@ githubRelease {
 
 // configure the maven publication
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId archivesBaseName
-
-            from components.java
+    repositories {
+        maven {
+            name = "kikugieMaven"
+            url = "https://maven.kikugie.dev/releases"
+            credentials(PasswordCredentials)
+            authentication {
+                basic(BasicAuthentication)
+            }
         }
     }
 
-    // select the repositories you want to publish to
-    repositories {
-        // uncomment to publish to the local maven
-        // mavenLocal()
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = project.maven_group + "." + project.archives_base_name
+            artifactId = project.mod_version
+            version = project.game_versions
+
+            from components.java
+        }
     }
 }

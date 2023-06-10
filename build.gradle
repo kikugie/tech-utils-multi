@@ -12,9 +12,6 @@ plugins {
     // https://github.com/Fallen-Breath/yamlang
     id 'me.fallenbreath.yamlang' version '1.2.1' apply false
 
-    // https://github.com/uzzu/dotenv-gradle
-    id "co.uzzu.dotenv.gradle" version "2.0.0"
-
     // https://github.com/modrinth/minotaur
     id "com.modrinth.minotaur" version "2.+" apply false
 
@@ -27,13 +24,16 @@ preprocess {
     def mc17 = createNode('1.17.1', 1_17_01, 'yarn')
     def mc18 = createNode('1.18.2', 1_18_02, 'yarn')
     def mc19 = createNode('1.19.4', 1_19_04, 'yarn')
+    def mc20 = createNode('1.20', 1_20_00, 'yarn')
 
     mc16.link(mc17, null)
     mc17.link(mc18, null)
     mc18.link(mc19, null)
+    mc19.link(mc20, null)
 }
 
 tasks.register('buildAndGather') {
+    group("build")
     subprojects {
         dependsOn project.name + ':build'
     }
