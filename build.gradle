@@ -1,16 +1,16 @@
 plugins {
-    id 'maven-publish'
-    id 'fabric-loom' version '1.2-SNAPSHOT' apply false
+    id "maven-publish"
+    id "fabric-loom" version "1.2-SNAPSHOT" apply false
 
     // https://github.com/Juuxel/LoomQuiltflower
-    id 'io.github.juuxel.loom-quiltflower' version '1.8.0' apply false
+//    id "io.github.juuxel.loom-quiltflower" version "1.8.0" apply false
 
     // https://github.com/ReplayMod/preprocessor
     // https://github.com/Fallen-Breath/preprocessor
-    id 'com.replaymod.preprocess' version 'e1050f4d72'
+    id "com.replaymod.preprocess" version "6989e16efc"
 
     // https://github.com/Fallen-Breath/yamlang
-    id 'me.fallenbreath.yamlang' version '1.2.1' apply false
+    id "me.fallenbreath.yamlang" version "1.2.1" apply false
 
     // https://github.com/modrinth/minotaur
     id "com.modrinth.minotaur" version "2.+" apply false
@@ -23,47 +23,44 @@ plugins {
 }
 
 preprocess {
-    def mc14 = createNode('1.14.4', 1_14_04, 'yarn')
-    def mc15 = createNode('1.15.2', 1_15_02, 'yarn')
-    def mc16 = createNode('1.16.5', 1_16_05, 'yarn')
-    def mc17 = createNode('1.17.1', 1_17_01, 'yarn')
-    def mc18 = createNode('1.18.2', 1_18_02, 'yarn')
-    def mc19 = createNode('1.19.x', 1_19_04, 'yarn')
+    def mc17 = createNode("1.17.1", 1_17_01, "yarn")
+    def mc18 = createNode("1.18.2", 1_18_02, "yarn")
+    def mc19 = createNode("1.19.4", 1_19_04, "yarn")
+    def mc20 = createNode("1.20.1", 1_20_01, "yarn")
 
-    mc15.link(mc14, null)
-    mc16.link(mc15, null)
-    mc17.link(mc16, null)
+    mc20.link(mc19, null)
+    mc19.link(mc18, file("versions/mapping-1.19.4-1.18.2.txt"))
     mc18.link(mc17, null)
-    mc19.link(mc18, null)
 }
 
-tasks.register('buildAndGather') {
+tasks.register("buildAndGather") {
+    group "build"
     subprojects {
-        dependsOn project.name + ':build'
+        dependsOn project.name + ":build"
     }
     doFirst {
-        println 'Gathering builds'
+        println "Gathering builds"
         copy {
             subprojects {
-                def libDir = project.projectDir.toPath().resolve('build/libs')
+                def libDir = project.projectDir.toPath().resolve("build/libs")
                 from(libDir) {
-                    include '*.jar'
-                    exclude '*-dev.jar', '*-sources.jar'
+                    include "*.jar"
+                    exclude "*-dev.jar", "*-sources.jar"
                 }
-                into 'build/libs/'
+                into "build/libs/"
                 duplicatesStrategy DuplicatesStrategy.INCLUDE
             }
         }
     }
 }
 
-tasks.register('cleanPreprocessSources') {
+tasks.register("cleanPreprocessSources") {
     doFirst {
         subprojects {
-            def path = project.projectDir.toPath().resolve('build/preprocessed')
+            def path = project.projectDir.toPath().resolve("build/preprocessed")
             path.toFile().deleteDir()
 
-            def resPath = project.projectDir.toPath().resolve('build/resources')
+            def resPath = project.projectDir.toPath().resolve("build/resources")
             resPath.toFile().deleteDir()
         }
     }

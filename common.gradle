@@ -1,6 +1,6 @@
 apply plugin: "maven-publish"
 apply plugin: "fabric-loom"
-apply plugin: "io.github.juuxel.loom-quiltflower"
+//apply plugin: "io.github.juuxel.loom-quiltflower"
 apply plugin: "com.replaymod.preprocess"
 apply plugin: "me.fallenbreath.yamlang"
 apply plugin: 'com.modrinth.minotaur'
@@ -8,8 +8,12 @@ apply plugin: "com.github.breadmoirai.github-release"
 
 int mcVersion = 1
 
+loom {
+    accessWidenerPath = file("techutils.accesswidener")
+}
+
 preprocess {
-    mcVersion = vars.get()["MC"]
+    mcVersion = vars.get()["MC"] as int
     tabIndentation = false
 }
 
@@ -27,10 +31,12 @@ repositories {
         name = "Gradle Plugin Portal"
         url = "https://plugins.gradle.org/m2/"
     }
-//	maven {
-//		name = "TerraformersMC"
-//		url "https://maven.terraformersmc.com/releases/"
-//	}
+    maven {
+        name = "TerraformersMC"
+        url "https://maven.terraformersmc.com/releases/"
+    }
+    maven { url "https://cursemaven.com" }
+    maven { url 'https://masa.dy.fi/maven' }
 }
 
 // https://github.com/FabricMC/fabric-loader/issues/783
@@ -45,10 +51,11 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     // dependencies
-//	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-//	include api(annotationProcessor("com.github.LlamaLad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}"))
-
-//	modApi "com.terraformersmc:modmenu:${project.modmenu_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    modApi "com.terraformersmc:modmenu:${project.modmenu_version}"
+    modImplementation "fi.dy.masa.malilib:malilib-fabric-${project.malilib_version}"
+    modImplementation "curse.maven:litematica-308892:${project.litematica_file}"
+    include api(annotationProcessor("com.github.LlamaLad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}"))
 }
 
 loom {
@@ -82,10 +89,12 @@ processResources {
 
     filesMatching("fabric.mod.json") {
         def valueMap = [
-                "id"                  : project.mod_id,
-                "name"                : project.mod_name,
-                "version"             : project.mod_version,
-                "minecraft_dependency": project.minecraft_dependency,
+                "id"                   : project.mod_id,
+                "name"                 : project.mod_name,
+                "version"              : project.mod_version,
+                "minecraft_dependency" : project.minecraft_dependency,
+                "malilib_dependency"   : project.malilib_dependency,
+                "litematica_dependency": project.litematica_dependency
         ]
         expand valueMap
     }
@@ -112,22 +121,22 @@ jar {
 }
 
 modrinth {
-	token = env.fetchOrNull("MODRINTH_TOKEN")
-	projectId = project.mod_id
-	versionName = project.mod_name + " " + project.mod_version + " for " + project.game_versions
-	versionNumber = project.mod_version
-	versionType = "release"
-	uploadFile = remapJar
-	additionalFiles = [sourcesJar]
-	gameVersions = project.modrinth_versions.split(" ").toList()
-	loaders = ["fabric", "quilt"]
-	dependencies {
+    token = env.fetchOrNull("MODRINTH_TOKEN")
+    projectId = project.mod_id
+    versionName = project.mod_name + " " + project.mod_version + " for " + project.game_versions
+    versionNumber = project.mod_version
+    versionType = "release"
+    uploadFile = remapJar
+    additionalFiles = [sourcesJar]
+    gameVersions = project.modrinth_versions.split(" ").toList()
+    loaders = ["fabric", "quilt"]
+    dependencies {
 
-	}
-	syncBodyFrom = rootProject.file("README.md").text
-	changelog = rootProject.file("CHANGELOG.md").text
-	failSilently = true
-	debugMode = true // safety, disable to actually publish
+    }
+    syncBodyFrom = rootProject.file("README.md").text
+    changelog = rootProject.file("CHANGELOG.md").text
+    failSilently = true
+    debugMode = true // safety, disable to actually publish
 }
 
 githubRelease {
