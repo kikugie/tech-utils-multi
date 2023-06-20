@@ -2,6 +2,7 @@ apply plugin: "maven-publish"
 apply plugin: "fabric-loom"
 apply plugin: "com.replaymod.preprocess"
 apply plugin: "me.fallenbreath.yamlang"
+apply plugin: 'io.github.juuxel.loom-quiltflower'
 apply plugin: 'com.modrinth.minotaur'
 apply plugin: "com.github.breadmoirai.github-release"
 
@@ -80,6 +81,9 @@ if (mcVersion >= 11800) {
 
 processResources {
     inputs.property "version", project.mod_version
+	inputs.property "id", project.mod_id
+	inputs.property "name", project.mod_name
+	inputs.property "minecraft_dependency", project.minecraft_dependency
 
     filesMatching("fabric.mod.json") {
         def valueMap = [
@@ -116,11 +120,13 @@ jar {
     }
 }
 
+def debug = true
+
 tasks.register("release") {
     group("publishing")
     dependsOn("modrinth")
     dependsOn("githubRelease")
-//    dependsOn("publishing")
+	if (!debug) dependsOn("publishing")
 }
 
 modrinth {
@@ -139,7 +145,7 @@ modrinth {
     syncBodyFrom = rootProject.file("README.md").text
     changelog = rootProject.file("CHANGELOG.md").text
     failSilently = true
-    debugMode = true // safety, disable to actually publish
+    debugMode = debug // safety, disable to actually publish
 }
 
 githubRelease {
@@ -153,8 +159,10 @@ githubRelease {
     draft = mcVersion > 11605 // first file should be false
     releaseAssets = [remapJar, sourcesJar]
     allowUploadToExisting = true // allows publishing multiple files
-    dryRun = true // safety, disable to actually publish
+    dryRun = debug // safety, disable to actually publish
 }
+classes.dependsOn licenseFormatMain
+testClasses.dependsOn licenseFormatTest
 
 // configure the maven publication
 publishing {
