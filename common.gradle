@@ -1,13 +1,15 @@
+import net.darkhax.curseforgegradle.TaskPublishCurseForge
+
 apply plugin: "maven-publish"
 apply plugin: "fabric-loom"
 apply plugin: "com.replaymod.preprocess"
 apply plugin: "me.fallenbreath.yamlang"
-apply plugin: 'io.github.juuxel.loom-quiltflower'
-apply plugin: 'com.modrinth.minotaur'
+apply plugin: "io.github.juuxel.loom-quiltflower"
+apply plugin: "com.modrinth.minotaur"
 apply plugin: "com.github.breadmoirai.github-release"
+apply plugin: "net.darkhax.curseforgegradle"
 
 int mcVersion = 1
-
 preprocess {
     mcVersion = vars.get()["MC"] as int
     tabIndentation = false
@@ -68,22 +70,11 @@ remapJar {
     remapperIsolation = true
 }
 
-if (mcVersion >= 11800) {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-} else if (mcVersion >= 11700) {
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
-} else {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
-
 processResources {
     inputs.property "version", project.mod_version
-	inputs.property "id", project.mod_id
-	inputs.property "name", project.mod_name
-	inputs.property "minecraft_dependency", project.minecraft_dependency
+    inputs.property "id", project.mod_id
+    inputs.property "name", project.mod_name
+    inputs.property "minecraft_dependency", project.minecraft_dependency
 
     filesMatching("fabric.mod.json") {
         def valueMap = [
@@ -111,6 +102,17 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
+    if (mcVersion >= 11800) {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    } else if (mcVersion >= 11700) {
+        sourceCompatibility = JavaVersion.VERSION_16
+        targetCompatibility = JavaVersion.VERSION_16
+    } else {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
     withSourcesJar()
 }
 
@@ -126,18 +128,19 @@ tasks.register("release") {
     group("publishing")
     dependsOn("modrinth")
     dependsOn("githubRelease")
-	if (!debug) dependsOn("publishing")
+    if (!debug) dependsOn("publishing")
 }
 
 modrinth {
     token = project.findProperty("modrinthToken")
     projectId = project.mod_id
-    versionName = project.mod_name + " " + project.mod_version + " for " + project.game_versions
+    versionName = "${project.mod_name} ${project.mod_version} for ${project.title_version}"
     versionNumber = project.mod_version
-    versionType = "release"
+    versionType = project.release_type
     uploadFile = remapJar
     additionalFiles = [sourcesJar]
-    gameVersions = project.modrinth_versions.split(" ").toList()
+    //noinspection GroovyAssignabilityCheck
+    gameVersions = project.release_versions.split(" ").toList()
     loaders = ["fabric", "quilt"]
     dependencies {
 
@@ -145,7 +148,7 @@ modrinth {
     syncBodyFrom = rootProject.file("README.md").text
     changelog = rootProject.file("CHANGELOG.md").text
     failSilently = true
-    debugMode = debug // safety, disable to actually publish
+    debugMode = debug
 }
 
 githubRelease {
@@ -154,15 +157,31 @@ githubRelease {
     repo = project.mod_id
     tagName = "v${project.mod_version}"
     targetCommitish = "multi"
-    releaseName = project.mod_name + " " + project.mod_version
+    releaseName = "${project.mod_name} ${project.mod_version}"
     body = rootProject.file("CHANGELOG.md").text
     draft = mcVersion > 11605 // first file should be false
     releaseAssets = [remapJar, sourcesJar]
+    prerelease = project.release_type != "release"
     allowUploadToExisting = true // allows publishing multiple files
-    dryRun = debug // safety, disable to actually publish
+    dryRun = debug
 }
-classes.dependsOn licenseFormatMain
-testClasses.dependsOn licenseFormatTest
+
+tasks.register("curseforge", TaskPublishCurseForge) {
+    group "publishing"
+    disableVersionDetection()
+    apiToken = project.findProperty("curseforgeToken")
+
+    def mainFile = upload(project.project_id, remapJar)
+    mainFile.releaseType = release_type
+    mainFile.displayName = "${project.mod_name} ${project.mod_version} for ${project.title_version}"
+    mainFile.changelog = rootProject.file("CHANGELOG.md").text
+    mainFile.changelogType = "markdown"
+    mainFile.addModLoader "fabric", "quilt"
+    for (String version : project.release_versions.split(" ")) {
+        mainFile.addGameVersion version
+    }
+    debugMode = debug
+}
 
 // configure the maven publication
 publishing {
@@ -181,7 +200,7 @@ publishing {
         mavenJava(MavenPublication) {
             groupId = project.maven_group + "." + project.archives_base_name
             artifactId = project.mod_version
-            version = project.game_versions
+            version = project.title_version
 
             from components.java
         }
