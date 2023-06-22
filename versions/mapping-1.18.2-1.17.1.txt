@@ -1,0 +1,2 @@
+net.minecraft.client.util.math.MatrixStack multiplyPositionMatrix() method_34425()
+net.minecraft.client.util.math.MatrixStack.Entry getPositionMatrix() getModel()

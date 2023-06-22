@@ -1,14 +1,13 @@
-package dev.kikugie.template_mod;
+package dev.kikugie.techutils;
 
-import net.fabricmc.api.ModInitializer;
+import net.fabricmc.api.ClientModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TemplateMod implements ModInitializer {
+public class TechUtilsMod implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(Reference.MOD_ID);
-
     @Override
-    public void onInitialize() {
+    public void onInitializeClient() {
         Reference.init();
     }
 }
