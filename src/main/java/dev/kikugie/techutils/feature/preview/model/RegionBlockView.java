@@ -1,4 +1,4 @@
-package dev.kikugie.techutils.feature.preview;
+package dev.kikugie.techutils.feature.preview.model;
 
 import dev.kikugie.techutils.util.ValidBox;
 import fi.dy.masa.litematica.render.schematic.ChunkCacheSchematic;
@@ -18,8 +18,8 @@ import net.minecraft.world.chunk.light.LightingProvider;
 import org.jetbrains.annotations.Nullable;
 
 public class RegionBlockView implements BlockRenderView {
-    private final LitematicaBlockStateContainer blockStateContainer;
     public final ValidBox box;
+    private final LitematicaBlockStateContainer blockStateContainer;
     private final MinecraftClient client = MinecraftClient.getInstance();
     private final LightingProvider lightingProvider = new FakeLightingProvider(new ChunkCacheSchematic(client.world, client.world, new BlockPos(0, 0, 0), 0));
 

@@ -1,3 +1,4 @@
 accessWidener v1 named
 
+#accessible method net/minecraft/item/BundleItem addToBundle (Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)I
 extendable method net/minecraft/client/render/block/FluidRenderer vertex (Lnet/minecraft/client/render/VertexConsumer;DDDFFFFFI)V

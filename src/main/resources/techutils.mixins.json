@@ -6,11 +6,20 @@
   "mixins": [
   ],
   "client": [
-    "litematica.GuiSchematicBrowserBaseMixin",
-    "litematica.WidgetSchematicBrowserMixin",
+    "containerscan.ClientPlayerInteractionManagerMixin",
+    "containerscan.HandledScreenMixin",
+    "containerscan.MinecraftClientMixin",
+    "containerscan.ScreenHandlerAccessor",
+    "containerscan.WorldRendererAccessor",
+    "containerscan.WorldRendererMixin",
+    "mod.fapi.ClientPlayNetworkAddonMixin",
+    "mod.litematica.GuiSchematicBrowserBaseMixin",
+    "mod.litematica.GuiSchematicManagerMixin",
+    "mod.litematica.WidgetSchematicBrowserMixin",
     "preview.BlockEntityAccessor",
     "preview.PostFluidRendererMixin",
-    "preview.PreFluidRendererMixin"
+    "preview.PreFluidRendererMixin",
+    "worldeditsync.ClientPlayNetworkHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

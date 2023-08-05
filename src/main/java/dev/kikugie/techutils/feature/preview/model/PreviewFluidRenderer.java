@@ -1,4 +1,4 @@
-package dev.kikugie.techutils.feature.preview;
+package dev.kikugie.techutils.feature.preview.model;
 
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.block.FluidRenderer;
@@ -8,7 +8,7 @@ public class PreviewFluidRenderer extends FluidRenderer {
 
     private Matrix4f matrix;
 
-    public PreviewFluidRenderer(){
+    public PreviewFluidRenderer() {
         onResourceReload();
     }
 

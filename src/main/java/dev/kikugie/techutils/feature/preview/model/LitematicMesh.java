@@ -1,6 +1,7 @@
-package dev.kikugie.techutils.feature.preview;
+package dev.kikugie.techutils.feature.preview.model;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
 import dev.kikugie.techutils.TechUtilsMod;
 import dev.kikugie.techutils.util.ValidBox;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
@@ -28,9 +29,6 @@ import org.joml.Matrix4f;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-
-//#if MC > 12000
-import com.mojang.blaze3d.systems.VertexSorter;
 //#endif
 
 /*
@@ -77,9 +75,9 @@ public class LitematicMesh {
         Vec3i size = schematic.getTotalSize();
 
         Vec3d offset = new Vec3d(
-                -corner.getX() - (double) size.getX() / 2,
-                -corner.getY() - (double) size.getY() / 2,
-                -corner.getZ() - (double) size.getZ() / 2);
+                -corner.getX() - (double) size.getX() / 2d,
+                -corner.getY() - (double) size.getY() / 2d,
+                -corner.getZ() - (double) size.getZ() / 2d);
         matrices.translate(offset.x, offset.y, offset.z);
 
         try {
@@ -247,20 +245,24 @@ public class LitematicMesh {
         return new ValidBox(corners);
     }
 
-    public Map<BlockPos, BlockEntity> getBlockEntities() {
+    public Map<BlockPos, BlockEntity> blockEntities() {
         return blockEntities;
     }
 
-    public List<EntityEntry> getEntities() {
+    public List<EntityEntry> entities() {
         return entities;
     }
 
-    public Vec3i getSize() {
+    public Vec3i size() {
         return schematic.getTotalSize();
     }
 
-    public boolean isComplete() {
+    public boolean complete() {
         return done;
+    }
+
+    public float progress() {
+        return processed / (float) totalBlocks;
     }
 
     public record EntityEntry(Entity entity, int light) {

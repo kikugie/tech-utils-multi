@@ -1,6 +1,6 @@
 package dev.kikugie.techutils.mixin.preview;
 
-import dev.kikugie.techutils.feature.preview.PreviewFluidRenderer;
+import dev.kikugie.techutils.feature.preview.model.PreviewFluidRenderer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.block.FluidRenderer;
